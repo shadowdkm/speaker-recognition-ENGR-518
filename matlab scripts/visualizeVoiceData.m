@@ -1,18 +1,18 @@
 clear all
 
-d1 = audioread("./long data/Juliyalong.wav");
+d1 = audioread("../data/Juliyalong.wav");
 d1=d1(:,1);
 [~,~,T1,P1] = spectrogram(d1,2048,2000,[],16000);
 V1=P1(1:260,max(log10(P1),[],1)>-5);
 P1=[];d1=[];
 
-d2 = audioread("./long data/Shubhamlong.wav");
+d2 = audioread("../data/Shubhamlong.wav");
 d2=d2(:,1);
 [~,~,T2,P2] = spectrogram(d2,2048,2000,[],16000);
 V2=P2(1:260,max(log10(P2),[],1)>-5);
 P2=[];d2=[];
 
-d3 = audioread("./long data/Shadowlong.wav");
+d3 = audioread("../data/Shadowlong.wav");
 d3=d3(:,1);
 [S,F,T3,P3] = spectrogram(d3,2048,2000,[],16000);
 V3=P3(1:260,max(log10(P3),[],1)>-5);
