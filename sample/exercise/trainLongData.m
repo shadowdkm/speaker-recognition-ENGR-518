@@ -27,7 +27,7 @@ net.divideParam.valRatio = 15/100;
 net.divideParam.testRatio = 15/100;
 
 % Train the Network
-[net,tr] = train(net,x,t);
+[net,tr] = train(net,x,t,'useGPU','yes');
 
 % Test the Network
 y = net(x);
