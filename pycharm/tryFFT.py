@@ -1,66 +1,142 @@
-import wave
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.io import wavfile
+from scipy.signal import stft
+import pandas as pd
+
+def wav2fft(Path):
+    # Load an audio file
+    file_path = Path  # Replace with the path to your audio file
+    sr, y = wavfile.read(file_path)
+
+    # Compute the STFT
+    n_fft = 2048  # Number of FFT points (window size)
+    hop_length = 512  # Hop length between frames
+    f, t, Zxx = stft(y, fs=sr, nperseg=n_fft, noverlap=hop_length)
+
+    # Convert amplitude spectrogram to dB scale
+    Zxx_db = 10 * np.log10(np.abs(Zxx)+0.0001)
+    return Zxx_db
+
+def data2fft(y):
+    # Compute the STFT
+    n_fft = 2048  # Number of FFT points (window size)
+    hop_length = 512  # Hop length between frames
+    f, t, Zxx = stft(y, fs=8000, nperseg=n_fft, noverlap=hop_length)
+
+    # Convert amplitude spectrogram to dB scale
+    Zxx_db = 10 * np.log10(np.abs(Zxx)+0.0001)
+    return Zxx_db
 
 
-def read_wav_file(file_path):
-    with wave.open(file_path, 'rb') as wav_file:
-        # Get the audio file parameters
-        sample_width = wav_file.getsampwidth()
-        frame_rate = wav_file.getframerate()
-        num_frames = wav_file.getnframes()
-        num_channels = wav_file.getnchannels()
+v1=wav2fft("../IIR/wav1.wav")[0:150,:].transpose()
+v2=wav2fft("../IIR/wav2.wav")[0:150,:].transpose()
+v3=wav2fft("../IIR/wav3.wav")[0:150,:].transpose()
 
-        # Read the audio data
-        audio_data = wav_file.readframes(num_frames)
-    # Convert binary data to a numpy array
-    audio_array = np.frombuffer(audio_data, dtype=np.int16)
-    # Reshape the array according to the number of channels
-    audio_array = audio_array.reshape(-1, num_channels)
+##
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
 
-    return audio_array, frame_rate
+def cost_function_reg(X, y, weights, lambda_reg):
+    m = X.shape[0]
+    h = sigmoid(X @ weights)
+    epsilon = 1e-5
+    reg_term = (lambda_reg / (2 * m)) * np.sum(np.square(weights[1:]))
+    cost = -1/m * np.sum(y * np.log(h + epsilon) + (1 - y) * np.log(1 - h + epsilon)) + reg_term
+    return cost
+
+def gradient_descent_reg(X, y, weights, learning_rate, iterations, lambda_reg):
+    m = X.shape[0]
+    cost_history = []
+
+    for _ in range(iterations):
+        weights[0] -= (learning_rate / m) * np.sum(sigmoid(X @ weights) - y)
+        weights[1:] -= (learning_rate / m) * (X[:, 1:].T @ (sigmoid(X @ weights) - y) + lambda_reg * weights[1:])
+        cost_history.append(cost_function_reg(X, y, weights, lambda_reg))
+
+    return weights, cost_history
+
+def train_one_vs_rest(X, y, num_classes, learning_rate, iterations, lambda_reg):
+    models = []
+    m, n = X.shape
+    X = np.hstack((np.ones((m, 1)), X))
+
+    for i in range(num_classes):
+        y_ovr = np.where(y == i, 1, 0)
+        weights = np.zeros(n + 1)
+        weights, _ = gradient_descent_reg(X, y_ovr, weights, learning_rate, iterations, lambda_reg)
+        models.append(weights)
+
+    return models
+
+def predict(X, models):
+    m = X.shape[0]
+    X = np.hstack((np.ones((m, 1)), X))
+    preds = np.array([sigmoid(X @ w) for w in models]).T
+    return np.argmax(preds, axis=1)
+
+# Manual Data Splitting Function
+def split_data(data, train_frac, test_frac):
+    train_size = int(len(data) * train_frac)
+    test_size = int(len(data) * test_frac)
+    train_data = data[:train_size]
+    validation_data = data[train_size:train_size + test_size]
+    test_data = data[train_size + test_size:]
+    return train_data, validation_data, test_data
+
+# Manual Feature Scaling Function
+def standardize_data(X):
+    mean = np.mean(X, axis=0)
+    std = np.std(X, axis=0)
+    return (X - mean) / std
 
 
-def process_audio(audio_array, frame_rate):
-    # Extract left channel (assuming stereo audio)
-    left_channel = audio_array[:, 0]
+data = []
+df = pd.DataFrame.from_records(v1)
+df['label'] = 0
+data.append(df)
+df = pd.DataFrame.from_records(v2)
+df['label'] = 1
+data.append(df)
+df = pd.DataFrame.from_records(v3)
+df['label'] = 2
+data.append(df)
 
-    # Cut out 2048 points every second and perform FFT
-    window_size = 2048
-    overlap = 0  # No overlap for simplicity, you may adjust this if needed
+data = pd.concat(data, ignore_index=True)
+#np.random.shuffle(data.values)  # Shuffle the data
+data = data.sample(frac=1).reset_index(drop=True)
 
-    num_windows = len(left_channel) // (window_size - overlap)
+# Splitting Data
+train_data, validation_data, test_data = split_data(data, 0.7, 0.15)
+X_train, y_train = train_data.drop('label', axis=1), train_data['label']
+X_val, y_val = validation_data.drop('label', axis=1), validation_data['label']
+X_test, y_test = test_data.drop('label', axis=1), test_data['label']
 
-    # Initialize an array to store the log-scaled FFT results
-    log_specgram = np.zeros((num_windows, 150))
+# Feature Scaling
+#X_train_scaled= standardize_data(X_train)
+#X_val_scaled= standardize_data(X_val)
+#X_test_scaled= standardize_data(X_test)
+X_train_scaled= (X_train)
+X_val_scaled= (X_val)
+X_test_scaled= (X_test)
 
-    for i in range(num_windows):
-        start = i * (window_size - overlap)
-        end = start + window_size
+# Training Parameters
+learning_rate = 0.01
+iterations = 3000
+num_classes = 3
+lambda_reg = 0.1
 
-        # Apply window function (e.g., Hamming window)
-        window = np.hamming(window_size)
-        windowed_data = left_channel[start:end] * window
+# Training the Models
+models_reg = train_one_vs_rest(X_train_scaled, y_train, num_classes, learning_rate, iterations, lambda_reg)
 
-        # Perform FFT using numpy
-        fft_result = np.fft.fft(windowed_data)
-        fft_magnitude = np.abs(fft_result)[:window_size // 2 + 1]
+# Validation and Testing
+y_val_pred_reg = predict(X_val_scaled, models_reg)
+accuracy_val = np.mean(y_val_pred_reg == y_val)
 
-        # Convert to log scale using numpy
-        log_specgram[i, :] = np.log10(1e-10 + fft_magnitude[0:150])
+y_test_pred = predict(X_test_scaled, models_reg)
+accuracy_test = np.mean(y_test_pred == y_test)
 
-    return log_specgram
+# Print the accuracy results
+print(f"Validation Accuracy: {accuracy_val}")
+print(f"Test Accuracy: {accuracy_test}")
 
-
-# Example usage
-file_path = "../IIR/wav1.wav"  # Replace with the path to your WAV file
-audio_array, frame_rate = read_wav_file(file_path)
-log_specgram = process_audio(audio_array, frame_rate)
-
-# Plotting the log-scaled spectrogram
-plt.imshow(log_specgram.T, aspect='auto', origin='lower', cmap='viridis')
-plt.colorbar(label='Log Magnitude (dB)')
-plt.xlabel('Time Window')
-plt.ylabel('Frequency Bin')
-plt.title('Log-scaled Spectrogram')
-plt.show()

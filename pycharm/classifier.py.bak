@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import scipy
+
 import myFilterX6
 
 # Logistic Regression Functions
@@ -62,13 +62,11 @@ def standardize_data(X):
 
 # Loading and Preprocessing Data
 #file_paths = ['../matlab scripts/V1.csv', '../matlab scripts/V2.csv', '../matlab scripts/V3.csv']
-#file_paths = ['./iir1.csv', './iir2.csv', './iir3.csv']
-file_paths = ['./iir1_selfNorm.csv', './iir2_selfNorm.csv', './iir3_selfNorm.csv']
-#file_paths = ['./iir1_selfNorm_subset.csv', './iir2_selfNorm_subset.csv', './iir3_selfNorm_subset.csv']
+file_paths = ['./iir1.csv', './iir2.csv', './iir3.csv']
 data = []
 
 for i, file_path in enumerate(file_paths):
-    df = pd.read_csv(file_path, header=None).T
+    df = pd.read_csv(file_path, header=None)
     df['label'] = i
     data.append(df)
 
@@ -86,9 +84,7 @@ X_test, y_test = test_data.drop('label', axis=1), test_data['label']
 X_train_scaled= standardize_data(X_train)
 X_val_scaled= standardize_data(X_val)
 X_test_scaled= standardize_data(X_test)
-X_train_scaled= (X_train)
-X_val_scaled= (X_val)
-X_test_scaled= (X_test)
+
 # Training Parameters
 learning_rate = 0.01
 iterations = 3000
@@ -137,12 +133,11 @@ def read_wav_file(file_path):
 # Example usage
 file_path = "../IIR/wav1.wav"  # Replace with the path to your WAV file
 audio_array, frame_rate = read_wav_file(file_path)
-audio_array=audio_array[10000:16000]
-f, t, Zxx = scipy.signal.stft(audio_array, 16000, nperseg=2048)
+print(audio_array.shape)
+audio_array=audio_array[10000::2]
 
-print(Zxx)
-plt.pcolormesh(t, f, np.abs(Zxx), vmin=0,  shading='gouraud')
-plt.title('STFT Magnitude')
-plt.ylabel('Frequency [Hz]')
-plt.xlabel('Time [sec]')
-plt.show()
+myX6=myFilterX6.myFilterX6()
+'''
+for i in range(1,100):
+    v=myX6.filter(audio_array[i*800:i*800+800])
+    print(v)'''

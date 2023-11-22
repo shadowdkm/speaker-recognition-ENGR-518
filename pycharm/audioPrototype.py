@@ -1,9 +1,41 @@
-import numpy as np
-import pandas as pd
-import scipy
-import myFilterX6
 
-# Logistic Regression Functions
+import pyaudio
+from datetime import datetime
+import numpy as np
+from scipy.io import wavfile
+from scipy.signal import stft
+import pandas as pd
+
+def wav2fft(Path):
+    # Load an audio file
+    file_path = Path  # Replace with the path to your audio file
+    sr, y = wavfile.read(file_path)
+
+    # Compute the STFT
+    n_fft = 2048  # Number of FFT points (window size)
+    hop_length = 512  # Hop length between frames
+    f, t, Zxx = stft(y, fs=sr, nperseg=n_fft, noverlap=hop_length)
+
+    # Convert amplitude spectrogram to dB scale
+    Zxx_db = 10 * np.log10(np.abs(Zxx)+0.0001)
+    return Zxx_db
+
+def data2fft(y):
+    # Compute the STFT
+    n_fft = 2048  # Number of FFT points (window size)
+    hop_length = 512  # Hop length between frames
+    f, t, Zxx = stft(y, fs=16000, nperseg=n_fft, noverlap=hop_length)
+
+    # Convert amplitude spectrogram to dB scale
+    Zxx_db = 10 * np.log10(np.abs(Zxx)+0.0001)
+    return Zxx_db
+
+
+v1=wav2fft("../IIR/wav1.wav")[0:150,:].transpose()
+v2=wav2fft("../IIR/wav2.wav")[0:150,:].transpose()
+v3=wav2fft("../IIR/wav3.wav")[0:150,:].transpose()
+
+##
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
 
@@ -45,6 +77,11 @@ def predict(X, models):
     preds = np.array([sigmoid(X @ w) for w in models]).T
     return np.argmax(preds, axis=1)
 
+def predictConf(X, models):
+    m = X.shape[0]
+    X = np.hstack((np.ones((m, 1)), X))
+    preds = np.array([sigmoid(X @ w) for w in models]).T
+    return preds
 # Manual Data Splitting Function
 def split_data(data, train_frac, test_frac):
     train_size = int(len(data) * train_frac)
@@ -60,17 +97,17 @@ def standardize_data(X):
     std = np.std(X, axis=0)
     return (X - mean) / std
 
-# Loading and Preprocessing Data
-#file_paths = ['../matlab scripts/V1.csv', '../matlab scripts/V2.csv', '../matlab scripts/V3.csv']
-#file_paths = ['./iir1.csv', './iir2.csv', './iir3.csv']
-file_paths = ['./iir1_selfNorm.csv', './iir2_selfNorm.csv', './iir3_selfNorm.csv']
-#file_paths = ['./iir1_selfNorm_subset.csv', './iir2_selfNorm_subset.csv', './iir3_selfNorm_subset.csv']
-data = []
 
-for i, file_path in enumerate(file_paths):
-    df = pd.read_csv(file_path, header=None).T
-    df['label'] = i
-    data.append(df)
+data = []
+df = pd.DataFrame.from_records(v1)
+df['label'] = 0
+data.append(df)
+df = pd.DataFrame.from_records(v2)
+df['label'] = 1
+data.append(df)
+df = pd.DataFrame.from_records(v3)
+df['label'] = 2
+data.append(df)
 
 data = pd.concat(data, ignore_index=True)
 #np.random.shuffle(data.values)  # Shuffle the data
@@ -83,12 +120,13 @@ X_val, y_val = validation_data.drop('label', axis=1), validation_data['label']
 X_test, y_test = test_data.drop('label', axis=1), test_data['label']
 
 # Feature Scaling
-X_train_scaled= standardize_data(X_train)
-X_val_scaled= standardize_data(X_val)
-X_test_scaled= standardize_data(X_test)
+#X_train_scaled= standardize_data(X_train)
+#X_val_scaled= standardize_data(X_val)
+#X_test_scaled= standardize_data(X_test)
 X_train_scaled= (X_train)
 X_val_scaled= (X_val)
 X_test_scaled= (X_test)
+
 # Training Parameters
 learning_rate = 0.01
 iterations = 3000
@@ -109,40 +147,45 @@ accuracy_test = np.mean(y_test_pred == y_test)
 print(f"Validation Accuracy: {accuracy_val}")
 print(f"Test Accuracy: {accuracy_test}")
 
-###################################################################################
+##########################################################
 
-import wave
-import numpy as np
-import matplotlib.pyplot as plt
+CHANNELS = 1
+FRAME_RATE = 16000
+RECORD_SECONDS = 0.5
+AUDIO_FORMAT = pyaudio.paInt16
+SAMPLE_SIZE = 2
+chunk=2048
 
+p = pyaudio.PyAudio()
 
-def read_wav_file(file_path):
-    with wave.open(file_path, 'rb') as wav_file:
-        # Get the audio file parameters
-        sample_width = wav_file.getsampwidth()
-        frame_rate = wav_file.getframerate()
-        num_frames = wav_file.getnframes()
-        num_channels = wav_file.getnchannels()
+stream = p.open(format=AUDIO_FORMAT,
+                channels=CHANNELS,
+                rate=FRAME_RATE,
+                input=True,
+                input_device_index=1,
+                frames_per_buffer=chunk)
 
-        # Read the audio data
-        audio_data = wav_file.readframes(num_frames)
-    # Convert binary data to a numpy array
-    audio_array = np.frombuffer(audio_data, dtype=np.int16)
-    # Reshape the array according to the number of channels
-    audio_array = audio_array.reshape(-1, num_channels)
+frames = []
+startTime=datetime.now()
+print("start")
+while (datetime.now()-startTime).seconds<3:
 
-    return audio_array, frame_rate
+    data = stream.read(chunk)
+    frames.append(data)
+    if len(frames) >= (FRAME_RATE * RECORD_SECONDS) / chunk:
+        #recordings.put(frames.copy())
+        dt = np.dtype(np.int16)
+        dt = dt.newbyteorder('<')
+        v = np.array([], dtype=dt)
+        for e in frames:
+            v = np.frombuffer(e, dtype=dt)
+            f = data2fft(v)[0:150,:].transpose()
+            realtime_pred = predictConf(f, models_reg)
+            print(realtime_pred)
+        frames = []
 
-
-# Example usage
-file_path = "../IIR/wav1.wav"  # Replace with the path to your WAV file
-audio_array, frame_rate = read_wav_file(file_path)
-audio_array=audio_array[10000:16000]
-f, t, Zxx = scipy.signal.stft(audio_array, 16000, nperseg=2048)
-
-print(Zxx)
-plt.pcolormesh(t, f, np.abs(Zxx), vmin=0,  shading='gouraud')
-plt.title('STFT Magnitude')
-plt.ylabel('Frequency [Hz]')
-plt.xlabel('Time [sec]')
-plt.show()
+print(v.shape)
+stream.stop_stream()
+stream.close()
+p.terminate()
+print("Section done")

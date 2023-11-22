@@ -17,54 +17,44 @@ decadeConstant=0.001;
 thresold=10;
 %%
 f1=[];
-ad1=abs(d1);
-for j=2:length(d1)
-    ad1(j)=ad1(j-1)+ad1(j);
-    ad1(j)=ad1(j)*(1-decadeConstant);
-end
+ad1= filter(decadeConstant,[1,decadeConstant-1],abs(d1))/decadeConstant;
 for i=1:size(As,1)
    filtered= filter(Bs(i,:),As(i,:),d1);
    filtered=filtered-d1;
-   filtered=abs(filtered);
-   for j=2:length(filtered)
-       filtered(j)=(filtered(j)+filtered(j-1))*(1-decadeConstant);
-   end
+   filtered= filter(decadeConstant,[1,decadeConstant-1],abs(filtered));
    f1=[f1,filtered];
 end
-%%
 f2=[];
-ad2=abs(d2);
-for j=2:length(d2)
-    ad2(j)=ad2(j-1)+ad2(j);
-    ad2(j)=ad2(j)*(1-decadeConstant);
-end
+ad2= filter(decadeConstant,[1,decadeConstant-1],abs(d2))/decadeConstant;
 for i=1:size(As,1)
    filtered= filter(Bs(i,:),As(i,:),d2);
    filtered=filtered-d2;
-   filtered=abs(filtered);
-   for j=2:length(filtered)
-       filtered(j)=(filtered(j)+filtered(j-1))*(1-decadeConstant);
-   end
-   
+   filtered= filter(decadeConstant,[1,decadeConstant-1],abs(filtered));
    f2=[f2,filtered];
 end
 
 f3=[];
-ad3=abs(d3);
-for j=2:length(d3)
-    ad3(j)=ad3(j-1)+ad3(j);
-    ad3(j)=ad3(j)*(1-decadeConstant);
-end
+ad3= filter(decadeConstant,[1,decadeConstant-1],abs(d3))/decadeConstant;
 for i=1:size(As,1)
    filtered= filter(Bs(i,:),As(i,:),d3);
    filtered=filtered-d3;
-   filtered=abs(filtered);
-   for j=2:length(filtered)
-       filtered(j)=(filtered(j)+filtered(j-1))*(1-decadeConstant);
-   end
-   
+   filtered= filter(decadeConstant,[1,decadeConstant-1],abs(filtered));
    f3=[f3,filtered];
 end
+%% domastic normalization
+% f3n = bsxfun(@rdivide, f3(1:1000:end,:), ad3(1:1000:end));
+% f2n = bsxfun(@rdivide, f2(1:1000:end,:), ad2(1:1000:end));
+% f1n = bsxfun(@rdivide, f1(1:1000:end,:), ad1(1:1000:end));
+subsetI=[1,6,11,20,30,38];
+epsilon=0.0001;
+f1n=normalizeToMax(log10(f1(1:1000:end,:)));
+f2n=normalizeToMax(log10(f2(1:1000:end,:)));
+f3n=normalizeToMax(log10(f3(1:1000:end,:)));
+f1ns=normalizeToMax(log10(f1(1:1000:end,subsetI)));
+f2ns=normalizeToMax(log10(f2(1:1000:end,subsetI)));
+f3ns=normalizeToMax(log10(f3(1:1000:end,subsetI)));
+
+
 %%
 f1=f1(ad1>thresold,:);
 f2=f2(ad2>thresold,:);
@@ -96,3 +86,11 @@ subsetI=[1,6,11,20,30,38];
 csvwrite("iir1_subset.csv",log10(f1(:,subsetI))');
 csvwrite("iir2_subset.csv",log10(f2(:,subsetI))');
 csvwrite("iir3_subset.csv",log10(f3(:,subsetI))');
+
+%%
+csvwrite("iir1_selfNorm.csv",(f1n));
+csvwrite("iir2_selfNorm.csv",(f2n));
+csvwrite("iir3_selfNorm.csv",(f3n));
+csvwrite("iir1_selfNorm_subset.csv",log10(f1(:,subsetI)));
+csvwrite("iir2_selfNorm_subset.csv",log10(f2(:,subsetI)));
+csvwrite("iir3_selfNorm_subset.csv",log10(f3(:,subsetI)));
