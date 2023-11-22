@@ -8,6 +8,7 @@ def wav2fft(Path):
     # Load an audio file
     file_path = Path  # Replace with the path to your audio file
     sr, y = wavfile.read(file_path)
+    #y=y[:,1]
 
     # Compute the STFT
     n_fft = 2048  # Number of FFT points (window size)
@@ -29,9 +30,9 @@ def data2fft(y):
     return Zxx_db
 
 
-v1=wav2fft("../IIR/wav1.wav")[0:150,:].transpose()
-v2=wav2fft("../IIR/wav2.wav")[0:150,:].transpose()
-v3=wav2fft("../IIR/wav3.wav")[0:150,:].transpose()
+v1=wav2fft("./juliyaV3.wav")[0:150,:].transpose()
+v2=wav2fft("./shubhamv3.wav")[0:150,:].transpose()
+v3=wav2fft("./shadowv3.wav")[0:150,:].transpose()
 
 ##
 def sigmoid(z):
@@ -113,12 +114,12 @@ X_val, y_val = validation_data.drop('label', axis=1), validation_data['label']
 X_test, y_test = test_data.drop('label', axis=1), test_data['label']
 
 # Feature Scaling
-#X_train_scaled= standardize_data(X_train)
-#X_val_scaled= standardize_data(X_val)
-#X_test_scaled= standardize_data(X_test)
-X_train_scaled= (X_train)
-X_val_scaled= (X_val)
-X_test_scaled= (X_test)
+X_train_scaled= standardize_data(X_train)
+X_val_scaled= standardize_data(X_val)
+X_test_scaled= standardize_data(X_test)
+#X_train_scaled= (X_train)
+#X_val_scaled= (X_val)
+#X_test_scaled= (X_test)
 
 # Training Parameters
 learning_rate = 0.01

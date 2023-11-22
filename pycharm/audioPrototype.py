@@ -31,10 +31,12 @@ def data2fft(y):
     return Zxx_db
 
 
-v1=wav2fft("../IIR/wav1.wav")[0:150,:].transpose()
-v2=wav2fft("../IIR/wav2.wav")[0:150,:].transpose()
-v3=wav2fft("../IIR/wav3.wav")[0:150,:].transpose()
-
+#v1=wav2fft("../IIR/wav1.wav")[0:150,:].transpose()
+#v2=wav2fft("../IIR/wav2.wav")[0:150,:].transpose()
+#v3=wav2fft("../IIR/wav3.wav")[0:150,:].transpose()
+v1=wav2fft("./juliyaV3.wav")[0:150,:].transpose()
+v2=wav2fft("./shubhamv3.wav")[0:150,:].transpose()
+v3=wav2fft("./shadowv3.wav")[0:150,:].transpose()
 ##
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
@@ -168,7 +170,7 @@ stream = p.open(format=AUDIO_FORMAT,
 frames = []
 startTime=datetime.now()
 print("start")
-while (datetime.now()-startTime).seconds<3:
+while (datetime.now()-startTime).seconds<5:
 
     data = stream.read(chunk)
     frames.append(data)
