@@ -5,7 +5,7 @@ from datetime import datetime
 import numpy as np
 from scipy.io import wavfile
 from scipy.signal import stft
-
+from  pathConverter import resource_path
 CHANNELS = 1
 FRAME_RATE = 16000
 RECORD_SECONDS = 0.1
@@ -57,15 +57,15 @@ class MyFrame(MyFrame1):
             self.m_choice1.Append(self.p.get_device_info_by_index(i)['name'])
 
         self.models_reg = []
-        self.models_reg.append(np.load("subject1.weight150.npy"))
-        self.models_reg.append(np.load("subject3.weight150.npy"))
-        self.models_reg.append(np.load("subject2.weight150.npy"))
+        self.models_reg.append(np.load(resource_path("subject1.weight150.npy")))
+        self.models_reg.append(np.load(resource_path("subject3.weight150.npy")))
+        self.models_reg.append(np.load(resource_path("subject2.weight150.npy")))
         self.frames = []
         self.v = np.array([], dtype=dt)
 
-        self.m_bitmap1.SetBitmap(wx.Bitmap("1.bmp"))
-        self.m_bitmap2.SetBitmap(wx.Bitmap("2.bmp"))
-        self.m_bitmap3.SetBitmap(wx.Bitmap("3.bmp"))
+        self.m_bitmap1.SetBitmap(wx.Bitmap(resource_path("1.bmp")))
+        self.m_bitmap2.SetBitmap(wx.Bitmap(resource_path("2.bmp")))
+        self.m_bitmap3.SetBitmap(wx.Bitmap(resource_path("3.bmp")))
 
 
     def Closing(self, event):
