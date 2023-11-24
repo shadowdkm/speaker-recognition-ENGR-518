@@ -1,13 +1,13 @@
 clear all
 
-d1 = audioread("../data/Juliyalong.wav");
-d1=d1(1e4:2:9e6,1);
+d1 = audioread("../pycharm/Juliyav3.wav");
+% d1=d1(1e4:2:9e6,1);
 
-d2 = audioread("../data/Shubhamlong.wav");
-d2=d2(1e4:2:9e6,1);
+d2 = audioread("../pycharm/Shubhamv3.wav");
+% d2=d2(1e4:2:9e6,1);
 
-d3 = audioread("../data/Shadowlong.wav");
-d3=d3(1e4:2:9e6,1);
+d3 = audioread("../pycharm/Shadowv3.wav");
+% d3=d3(1e4:2:9e6,1);
 
 
 As = readmatrix("as8k.csv");

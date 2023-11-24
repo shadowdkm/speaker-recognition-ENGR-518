@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from scipy.signal import stft
 import pandas as pd
@@ -30,9 +29,10 @@ def data2fft(y):
     return Zxx_db
 
 
-v1=wav2fft("./juliyaV3.wav")[0:150,:].transpose()
-v2=wav2fft("./shubhamv3.wav")[0:150,:].transpose()
-v3=wav2fft("./shadowv3.wav")[0:150,:].transpose()
+v1=wav2fft("../IIR/wav1.wav")[0:150,:].transpose()
+v2=wav2fft("../IIR/wav2.wav")[0:150,:].transpose()
+v3=wav2fft("../IIR/wav3.wav")[0:150,:].transpose()
+#v3=wav2fft("./780long.wav")[0:150,:].transpose()
 
 ##
 def sigmoid(z):
@@ -114,12 +114,12 @@ X_val, y_val = validation_data.drop('label', axis=1), validation_data['label']
 X_test, y_test = test_data.drop('label', axis=1), test_data['label']
 
 # Feature Scaling
-X_train_scaled= standardize_data(X_train)
-X_val_scaled= standardize_data(X_val)
-X_test_scaled= standardize_data(X_test)
-#X_train_scaled= (X_train)
-#X_val_scaled= (X_val)
-#X_test_scaled= (X_test)
+#X_train_scaled= standardize_data(X_train)
+#X_val_scaled= standardize_data(X_val)
+#X_test_scaled= standardize_data(X_test)
+X_train_scaled= (X_train)
+X_val_scaled= (X_val)
+X_test_scaled= (X_test)
 
 # Training Parameters
 learning_rate = 0.01
@@ -130,6 +130,10 @@ lambda_reg = 0.1
 # Training the Models
 models_reg = train_one_vs_rest(X_train_scaled, y_train, num_classes, learning_rate, iterations, lambda_reg)
 
+np.save("subject1.weight150",models_reg[0])
+np.save("subject2.weight150",models_reg[1])
+#np.save("subject3.weight150",models_reg[2])
+np.save("subject3.old",models_reg[2])
 # Validation and Testing
 y_val_pred_reg = predict(X_val_scaled, models_reg)
 accuracy_val = np.mean(y_val_pred_reg == y_val)
