@@ -145,13 +145,13 @@ print(f"Validation Accuracy: {accuracy_val}")
 print(f"Test Accuracy: {accuracy_test}")
 
 ## boosting
-lambda_reg = 2097152/4
+lambda_reg = 2097152/8
 ind=1
-while lambda_reg>0.01:
+while lambda_reg>10:
 
 
     # Training the Models
-    for repeats in range(1,10):
+    for repeats in range(1,16):
         data = data.sample(frac=1).reset_index(drop=True)
 
         # Splitting Data
@@ -159,6 +159,10 @@ while lambda_reg>0.01:
         X_train, y_train = train_data.drop('label', axis=1), train_data['label']
         X_val, y_val = validation_data.drop('label', axis=1), validation_data['label']
         X_test, y_test = test_data.drop('label', axis=1), test_data['label']
+
+        X_train_scaled = (X_train)
+        X_val_scaled = (X_val)
+        X_test_scaled = (X_test)
 
         models_reg = train_one_vs_rest(X_train_scaled, y_train, num_classes, learning_rate, iterations, lambda_reg)
 
