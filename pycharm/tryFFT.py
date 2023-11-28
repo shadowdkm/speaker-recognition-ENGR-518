@@ -29,9 +29,9 @@ def data2fft(y):
     return Zxx_db
 
 
-v1=wav2fft("../IIR/wav1.wav")[0:150,:].transpose()
-v2=wav2fft("../IIR/wav2.wav")[0:150,:].transpose()
-v3=wav2fft("../IIR/wav3.wav")[0:150,:].transpose()
+v1=wav2fft("./juliyaLG.wav")[0:150,:].transpose()
+v2=wav2fft("./ShubhamLG.wav")[0:150,:].transpose()
+v3=wav2fft("./shadowLG2.wav")[0:150,:].transpose()
 #v3=wav2fft("./780long.wav")[0:150,:].transpose()
 
 ##
@@ -132,8 +132,8 @@ models_reg = train_one_vs_rest(X_train_scaled, y_train, num_classes, learning_ra
 
 np.save("subject1.weight150",models_reg[0])
 np.save("subject2.weight150",models_reg[1])
-#np.save("subject3.weight150",models_reg[2])
-np.save("subject3.old",models_reg[2])
+np.save("subject3.weight150",models_reg[2])
+
 # Validation and Testing
 y_val_pred_reg = predict(X_val_scaled, models_reg)
 accuracy_val = np.mean(y_val_pred_reg == y_val)

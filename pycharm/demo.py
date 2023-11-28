@@ -5,7 +5,7 @@ from datetime import datetime
 import numpy as np
 from scipy.io import wavfile
 from scipy.signal import stft
-from  pathConverter import resource_path
+from pathConverter import resource_path
 CHANNELS = 1
 FRAME_RATE = 16000
 RECORD_SECONDS = 0.1
@@ -48,6 +48,10 @@ def predictConf(X, models):
     #return np.argmax(preds, axis=1)
     return preds
 
+def softmax(v):
+    p=np.exp(v)/np.sum(np.exp(v))
+    return p
+
 class MyFrame(MyFrame1):
     def __init__(self, parent):
         MyFrame1.__init__(self, parent)
@@ -58,8 +62,8 @@ class MyFrame(MyFrame1):
 
         self.models_reg = []
         self.models_reg.append(np.load(resource_path("subject1.weight150.npy")))
-        self.models_reg.append(np.load(resource_path("subject3.weight150.npy")))
         self.models_reg.append(np.load(resource_path("subject2.weight150.npy")))
+        self.models_reg.append(np.load(resource_path("subject3.weight150.npy")))
         self.frames = []
         self.v = np.array([], dtype=dt)
 
@@ -111,7 +115,7 @@ class MyFrame(MyFrame1):
                 self.m_gauge1.Value=int(amplitue)
                 f = data2fft(self.v)[0:150, :].transpose()
                 realtime_pred = predictConf(f, self.models_reg)
-                conf=np.mean(realtime_pred, axis=0)
+                conf=softmax(np.mean(realtime_pred, axis=0))
                 self.m_gauge2.Value = int(conf[0]*100)
                 self.m_gauge3.Value = int(conf[1]*100)
                 self.m_gauge4.Value = int(conf[2]*100)

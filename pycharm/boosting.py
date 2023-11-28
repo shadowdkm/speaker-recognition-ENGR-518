@@ -1,7 +1,40 @@
 import numpy as np
+from scipy.io import wavfile
+from scipy.signal import stft
 import pandas as pd
 
-# Logistic Regression Functions
+def wav2fft(Path):
+    # Load an audio file
+    file_path = Path  # Replace with the path to your audio file
+    sr, y = wavfile.read(file_path)
+    #y=y[:,1]
+
+    # Compute the STFT
+    n_fft = 2048  # Number of FFT points (window size)
+    hop_length = 512  # Hop length between frames
+    f, t, Zxx = stft(y, fs=sr, nperseg=n_fft, noverlap=hop_length)
+
+    # Convert amplitude spectrogram to dB scale
+    Zxx_db = 10 * np.log10(np.abs(Zxx)+0.0001)
+    return Zxx_db
+
+def data2fft(y):
+    # Compute the STFT
+    n_fft = 2048  # Number of FFT points (window size)
+    hop_length = 512  # Hop length between frames
+    f, t, Zxx = stft(y, fs=8000, nperseg=n_fft, noverlap=hop_length)
+
+    # Convert amplitude spectrogram to dB scale
+    Zxx_db = 10 * np.log10(np.abs(Zxx)+0.0001)
+    return Zxx_db
+
+
+v1=wav2fft("./juliyaLG.wav")[0:150,:].transpose()
+v2=wav2fft("./ShubhamLG.wav")[0:150,:].transpose()
+v3=wav2fft("./shadowLG.wav")[0:150,:].transpose()
+#v3=wav2fft("./780long.wav")[0:150,:].transpose()
+
+##
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
 
@@ -58,15 +91,17 @@ def standardize_data(X):
     std = np.std(X, axis=0)
     return (X - mean) / std
 
-# Loading and Preprocessing Data
-file_paths = ['../IIR/iir1.csv', '../IIR/iir2.csv', '../IIR/iir3.csv']
-#file_paths = ['./wav1.csv', './wav2.csv', './wav3.csv']
-data = []
 
-for i, file_path in enumerate(file_paths):
-    df = pd.read_csv(file_path, header=None).T
-    df['label'] = i
-    data.append(df)
+data = []
+df = pd.DataFrame.from_records(v1)
+df['label'] = 0
+data.append(df)
+df = pd.DataFrame.from_records(v2)
+df['label'] = 1
+data.append(df)
+df = pd.DataFrame.from_records(v3)
+df['label'] = 2
+data.append(df)
 
 data = pd.concat(data, ignore_index=True)
 #np.random.shuffle(data.values)  # Shuffle the data
@@ -79,9 +114,12 @@ X_val, y_val = validation_data.drop('label', axis=1), validation_data['label']
 X_test, y_test = test_data.drop('label', axis=1), test_data['label']
 
 # Feature Scaling
-X_train_scaled= standardize_data(X_train)
-X_val_scaled= standardize_data(X_val)
-X_test_scaled= standardize_data(X_test)
+#X_train_scaled= standardize_data(X_train)
+#X_val_scaled= standardize_data(X_val)
+#X_test_scaled= standardize_data(X_test)
+X_train_scaled= (X_train)
+X_val_scaled= (X_val)
+X_test_scaled= (X_test)
 
 # Training Parameters
 learning_rate = 0.01
@@ -102,8 +140,7 @@ while lambda_reg>0.01:
 
     # Print the accuracy results
     print(f"Lamba:{lambda_reg}, Validation Accuracy: {accuracy_val}, Test Accuracy:{accuracy_test}")
-    dataframe = pd.DataFrame.from_records(models_reg)
-    dataframe.to_csv("./boost_%d.csv"%ind, header=False, index=False)
-    lambda_reg/=2;
-    ind+=1;
+    #pd.DataFrame.from_records(models_reg).to_csv("./boost_%d.csv"%ind, header=False, index=False)
+    lambda_reg/=2
+    ind+=1
 
