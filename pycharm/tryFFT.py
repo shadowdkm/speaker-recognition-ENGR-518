@@ -7,7 +7,6 @@ def wav2fft(Path):
     # Load an audio file
     file_path = Path  # Replace with the path to your audio file
     sr, y = wavfile.read(file_path)
-    #y=y[:,1]
 
     # Compute the STFT
     n_fft = 2048  # Number of FFT points (window size)
@@ -28,11 +27,6 @@ def data2fft(y):
     Zxx_db = 10 * np.log10(np.abs(Zxx)+0.0001)
     return Zxx_db
 
-
-v1=wav2fft("./juliyaLG.wav")[0:150,:].transpose()
-v2=wav2fft("./ShubhamLG.wav")[0:150,:].transpose()
-v3=wav2fft("./shadowLG2.wav")[0:150,:].transpose()
-#v3=wav2fft("./780long.wav")[0:150,:].transpose()
 
 ##
 def sigmoid(z):
@@ -92,6 +86,12 @@ def standardize_data(X):
     return (X - mean) / std
 
 
+# Load Data
+v1=wav2fft("./juliyaLG.wav")[0:150,1:3000].transpose()
+v2=wav2fft("./ShubhamLG.wav")[0:150,1:3000].transpose()
+v3=wav2fft("./shadowLG2.wav")[0:150,1:3000].transpose()
+
+
 data = []
 df = pd.DataFrame.from_records(v1)
 df['label'] = 0
@@ -104,7 +104,6 @@ df['label'] = 2
 data.append(df)
 
 data = pd.concat(data, ignore_index=True)
-#np.random.shuffle(data.values)  # Shuffle the data
 data = data.sample(frac=1).reset_index(drop=True)
 
 # Splitting Data
@@ -145,3 +144,34 @@ accuracy_test = np.mean(y_test_pred == y_test)
 print(f"Validation Accuracy: {accuracy_val}")
 print(f"Test Accuracy: {accuracy_test}")
 
+## boosting
+lambda_reg = 2097152/4
+ind=1
+while lambda_reg>0.01:
+
+
+    # Training the Models
+    for repeats in range(1,10):
+        data = data.sample(frac=1).reset_index(drop=True)
+
+        # Splitting Data
+        train_data, validation_data, test_data = split_data(data, 0.7, 0.15)
+        X_train, y_train = train_data.drop('label', axis=1), train_data['label']
+        X_val, y_val = validation_data.drop('label', axis=1), validation_data['label']
+        X_test, y_test = test_data.drop('label', axis=1), test_data['label']
+
+        models_reg = train_one_vs_rest(X_train_scaled, y_train, num_classes, learning_rate, iterations, lambda_reg)
+
+        # Validation and Testing
+        y_val_pred_reg = predict(X_val_scaled, models_reg)
+        accuracy_val = np.mean(y_val_pred_reg == y_val)
+
+        y_test_pred = predict(X_test_scaled, models_reg)
+        accuracy_test = np.mean(y_test_pred == y_test)
+
+        # Print the accuracy results
+        print(f"Lamba:\t{lambda_reg}\tValidation Accuracy:\t{accuracy_val}\tTest Accuracy:\t{accuracy_test}")
+
+    pd.DataFrame.from_records(models_reg).to_csv("./boosting/boost_%d.csv"%ind, header=False, index=False)
+    lambda_reg/=2
+    ind+=1
