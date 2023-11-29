@@ -1,7 +1,34 @@
 import numpy as np
+from scipy.io import wavfile
+from scipy.signal import stft
 import pandas as pd
 
-# Logistic Regression Functions
+def wav2fft(Path):
+    # Load an audio file
+    file_path = Path  # Replace with the path to your audio file
+    sr, y = wavfile.read(file_path)
+
+    # Compute the STFT
+    n_fft = 2048  # Number of FFT points (window size)
+    hop_length = 512  # Hop length between frames
+    f, t, Zxx = stft(y, fs=sr, nperseg=n_fft, noverlap=hop_length)
+
+    # Convert amplitude spectrogram to dB scale
+    Zxx_db = 10 * np.log10(np.abs(Zxx)+0.0001)
+    return Zxx_db
+
+def data2fft(y):
+    # Compute the STFT
+    n_fft = 2048  # Number of FFT points (window size)
+    hop_length = 512  # Hop length between frames
+    f, t, Zxx = stft(y, fs=8000, nperseg=n_fft, noverlap=hop_length)
+
+    # Convert amplitude spectrogram to dB scale
+    Zxx_db = 10 * np.log10(np.abs(Zxx)+0.0001)
+    return Zxx_db
+
+
+##
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
 
@@ -56,17 +83,27 @@ def split_data(data, train_frac, test_frac):
 def standardize_data(X):
     mean = np.mean(X, axis=0)
     std = np.std(X, axis=0)
-    return (X - mean) / std, mean, std
+    return (X - mean) / std
 
-# Loading and Preprocessing Data
-file_paths = ['./iir1_subset.csv', './iir2_subset.csv', './iir3_subset.csv']
-#file_paths = ['./wav1.csv', './wav2.csv', './wav3.csv']
+selectFreq=[7,14,20,32,45,55]
+# Load Data
+v1=wav2fft("./juliyav3.wav")[1:150,:].transpose()
+v2=wav2fft("./Shubhamv3.wav")[1:150,:].transpose()
+v3=wav2fft("./shadowv3.wav")[1:150,:].transpose()
+#v1=wav2fft("./juliyaLG.wav")[0:150,1:3000].transpose()
+#v2=wav2fft("./ShubhamLG.wav")[0:150,1:3000].transpose()
+#v3=wav2fft("./shadowLG2.wav")[0:150,1:3000].transpose()
+
 data = []
-
-for i, file_path in enumerate(file_paths):
-    df = pd.read_csv(file_path, header=None).T
-    df['label'] = i
-    data.append(df)
+df = pd.DataFrame.from_records(v1)
+df['label'] = 0
+data.append(df)
+df = pd.DataFrame.from_records(v2)
+df['label'] = 1
+data.append(df)
+df = pd.DataFrame.from_records(v3)
+df['label'] = 2
+data.append(df)
 
 data = pd.concat(data, ignore_index=True)
 data = data.sample(frac=1).reset_index(drop=True)
@@ -78,9 +115,12 @@ X_val, y_val = validation_data.drop('label', axis=1), validation_data['label']
 X_test, y_test = test_data.drop('label', axis=1), test_data['label']
 
 # Feature Scaling
-X_train_scaled, m, sd= standardize_data(X_train)
-X_val_scaled= (X_val-m)/sd#standardize_data(X_val)
-X_test_scaled= (X_test-m)/sd#standardize_data(X_test)
+#X_train_scaled= standardize_data(X_train)
+#X_val_scaled= standardize_data(X_val)
+#X_test_scaled= standardize_data(X_test)
+X_train_scaled= (X_train)
+X_val_scaled= (X_val)
+X_test_scaled= (X_test)
 
 # Training Parameters
 learning_rate = 0.01
@@ -99,13 +139,5 @@ y_test_pred = predict(X_test_scaled, models_reg)
 accuracy_test = np.mean(y_test_pred == y_test)
 
 # Print the accuracy results
-print(f"Lamba:{lambda_reg}, Validation Accuracy: {accuracy_val}, Test Accuracy:{accuracy_test}")
-
-print(f"Data mean:{m}")
-print(f"Data sd:{sd}")
-print(f"Model:{models_reg}")
-
-np.savetxt("Data_mean.csv", m.to_numpy(), delimiter=",")
-np.savetxt("Data_sd.csv", sd.to_numpy(), delimiter=",")
-
-pd.DataFrame.from_records(models_reg).to_csv("./Data_model.csv", header=False, index=False)
+print(f"Validation Accuracy: {accuracy_val}")
+print(f"Test Accuracy: {accuracy_test}")

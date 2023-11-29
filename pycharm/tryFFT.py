@@ -87,6 +87,10 @@ def standardize_data(X):
 
 
 # Load Data
+#v1=wav2fft("./juliyaLG.wav")[0:150,1:3000].transpose()
+#v2=wav2fft("./ShubhamLG.wav")[0:150,1:3000].transpose()
+#v3=wav2fft("./shadowLG2.wav")[0:150,1:3000].transpose()
+
 v1=wav2fft("./juliyaLG.wav")[0:150,1:3000].transpose()
 v2=wav2fft("./ShubhamLG.wav")[0:150,1:3000].transpose()
 v3=wav2fft("./shadowLG2.wav")[0:150,1:3000].transpose()
@@ -144,6 +148,7 @@ accuracy_test = np.mean(y_test_pred == y_test)
 print(f"Validation Accuracy: {accuracy_val}")
 print(f"Test Accuracy: {accuracy_test}")
 
+'''
 ## boosting
 lambda_reg = 2097152/8
 ind=1
@@ -179,3 +184,4 @@ while lambda_reg>10:
     pd.DataFrame.from_records(models_reg).to_csv("./boosting/boost_%d.csv"%ind, header=False, index=False)
     lambda_reg/=2
     ind+=1
+    '''
