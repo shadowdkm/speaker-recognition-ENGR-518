@@ -1,5 +1,5 @@
 import wx
-from demoUI import MyFrame1
+from demoUIHorizontal import MyFrame1
 import pyaudio
 from datetime import datetime
 import numpy as np
@@ -87,6 +87,7 @@ class MyFrame(MyFrame1):
             self.frames=[]
             self.v = np.array([], dtype=dt)
             self.m_timer1.Start(1,True)
+            self.m_toggleBtn1.Label="Stop"
         else:
             self.m_timer1.Stop()
             self.frame = []
@@ -97,6 +98,7 @@ class MyFrame(MyFrame1):
             self.m_gauge3.Value = 0
             self.m_gauge4.Value = 0
             print("Stopped")
+            self.m_toggleBtn1.Label="Listen"
         event.Skip()
 
     def tick(self, event):

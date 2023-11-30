@@ -147,13 +147,13 @@ print(f"Test Accuracy: {accuracy_test}")
 
 
 ## boosting
-lambda_reg = 2**18
+lambda_reg = 2**23
 ind=1
-while lambda_reg>0.001:
+while lambda_reg>0.1:
 
 
     # Training the Models
-    for repeats in range(0,10):
+    for repeats in range(0,3):
         data = data.sample(frac=1).reset_index(drop=True)
 
         # Splitting Data
@@ -179,5 +179,5 @@ while lambda_reg>0.001:
         print(f"Lamba:\t{lambda_reg}\tValidation Accuracy:\t{accuracy_val}\tTest Accuracy:\t{accuracy_test}")
 
         pd.DataFrame.from_records(models_reg).to_csv("./boosting/boost_%03d_%03d.csv"%(ind,repeats), header=False, index=False)
-    lambda_reg/=1.414
+    lambda_reg/=2
     ind+=1

@@ -95,6 +95,13 @@ v1=wav2fft("./juliyaLG.wav")[0:150,1:3000].transpose()
 v2=wav2fft("./ShubhamLG.wav")[0:150,1:3000].transpose()
 v3=wav2fft("./shadowLG2.wav")[0:150,1:3000].transpose()
 
+#v1=wav2fft("../data/wav1.wav")[0:150,:].transpose()
+#v2=wav2fft("../data/wav2.wav")[0:150,:].transpose()
+#v3=wav2fft("../data/wav3.wav")[0:150,:].transpose()
+pd.DataFrame.from_records(v1).to_csv("./pythonFFT/subject1.csv", header=False, index=False)
+pd.DataFrame.from_records(v2).to_csv("./pythonFFT/subject2.csv", header=False, index=False)
+pd.DataFrame.from_records(v3).to_csv("./pythonFFT/subject3.csv", header=False, index=False)
+
 
 data = []
 df = pd.DataFrame.from_records(v1)
