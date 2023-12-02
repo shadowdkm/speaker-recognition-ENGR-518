@@ -85,7 +85,8 @@ def standardize_data(X):
     std = np.std(X, axis=0)
     return (X - mean) / std
 
-selectFreq=[2,5,7,8,12,15]
+#selectFreq=[2,5,7,8,12,15]
+selectFreq=[2,5,7,13,15,30]
 # Load Data
 v1=wav2fft("../data/wav1.wav")[selectFreq,:].transpose()
 v2=wav2fft("../data/wav2.wav")[selectFreq,:].transpose()

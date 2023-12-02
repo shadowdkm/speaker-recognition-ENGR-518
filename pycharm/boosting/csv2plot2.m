@@ -19,11 +19,11 @@ F=F(2:151);
 lambda=2.^(22:-1:1);
 figure(1)
 subplot1=subplot(3,1,1);
-surf(F,lambda,w0(:,2:end),'LineStyle','none'), xlim([0,60]),ylabel({"Lambda","Subject #1"})
+surf(F,lambda,w0(:,2:end),'LineStyle','none'), xlim([0,1000]),ylabel({"Lambda","Subject #1"})
 subplot2=subplot(3,1,2);
-surf(F,lambda,w1(:,2:end),'LineStyle','none'), xlim([0,60]),ylabel({"Lambda","Subject #2"})
+surf(F,lambda,w1(:,2:end),'LineStyle','none'), xlim([0,1000]),ylabel({"Lambda","Subject #2"})
 subplot3=subplot(3,1,3);
-surf(F,lambda,w2(:,2:end),'LineStyle','none'), xlim([0,60]),ylabel({"Lambda","Subject #3"})
+surf(F,lambda,w2(:,2:end),'LineStyle','none'), xlim([0,1000]),ylabel({"Lambda","Subject #3"})
 xlabel("Frequency")
 
 
@@ -37,8 +37,19 @@ subplot(2,1,1)
 plot(F(1:150),sub1(1:3:end,:),'Color',[0.9 0.2 0.5 0.02])
 ylabel(["Subject 1", "Power (dB)"])
 xlim([0,1000])
+ylim([-20,40])
 
 subplot1=subplot(2,1,2);
-surf(F,lambda,w0(:,2:end),'LineStyle','none'), xlim([0,1000]),ylabel({"Lambda","Subject #1"})
+surf(F(1:150),lambda,w0(:,2:end),'LineStyle','none'), xlim([0,1000]),ylabel({"Lambda","Subject #1"})
 view(subplot1,[0.0 90]);grid(subplot1,'on');hold(subplot1,'off');set(subplot1,'YMinorTick','on','YScale','log');
 xlabel("Frequency (Hz)")
+
+%% 
+F6=[7.8125,31.25,46.875,93.75,109.375,226.5625];
+F6i=F6*0;
+F1025=linspace(0,8000,1025);
+for i=1:length(F6)
+    F6i(i)=find(F1025==F6(i));
+end
+
+
