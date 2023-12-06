@@ -13,7 +13,7 @@ PyInstaller.__main__.run([
     '--onefile',
     #'--windowed',
     '--console',
-    #'--hidden-import=usb',
+    #'--hidden-import=PyAudio',
     #'--icon=OMflexIcon.ico',
     #'--add-binary=libusb-1.64.dll;.',
     '--add-data=subject1.weight150.npy;.',
